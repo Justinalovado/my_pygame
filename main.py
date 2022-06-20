@@ -1,11 +1,8 @@
-from glob import escape
-from platform import python_branch
 from sys import exit
 import pygame
-import os
 from Entity import player
 
-
+flag = 1
 pygame.init()
 clock = pygame.time.Clock()
 background = pygame.image.load("img/background1.png")
@@ -27,7 +24,12 @@ while True:
     if (1 in keys_pressed):
         player.move(keys_pressed)
     screen.blit(background, (0,0))
+    pygame.draw.rect(screen, 'green', player.hitbox)
     screen.blit(player.img, (player.x, player.y))
+    
+    if flag:
+        print(type(player.hitbox))
+        flag = 0
     pygame.display.update()
     clock.tick(60)
 
