@@ -1,6 +1,4 @@
-from cgi import print_arguments
 from random import randint
-from secrets import randbelow
 from sys import exit
 import pygame
 from Entity import Enemy, Player
@@ -31,8 +29,7 @@ while True:
     for enemy in enemies:
         enemy.update()
         screen.blit(enemy.img, (enemy.x, enemy.y))
-    if (1 in keys_pressed):
-        player.update(keys_pressed)
+    player.update(keys_pressed, enemies)
     pygame.draw.rect(screen, 'green', player.hitbox)
     screen.blit(player.img, (player.x, player.y))
     pygame.display.update()
