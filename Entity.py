@@ -6,7 +6,7 @@ class Player:
     def __init__(self) -> None:
         self.x = 0
         self.y = 0
-        self.health = 100
+        self.health = 30
         self.attack_point = 10
         self.speed = 3
         self.img = pygame.image.load("img/man.png").convert_alpha()
@@ -104,23 +104,21 @@ class Enemy:
     def show(self, screen):
         screen.blit(self.img, (self.x, self.y))
 
-# class Bullet:
-#     def __init__(self, x, y, dmg, vX, vY) -> None:
-#         self.x = x
-#         self.y = y
-#         self.dmg = dmg
-#         self.velocity = (vX, vY)
-#         self.img = pygame.image.load("img/bullet.png").convert_alpha()
-#         self.img = pygame.transform.scale(self.img, (10, 10))
+class Bullet:
+    def __init__(self, x, y, dmg, vX, vY) -> None:
+        self.x = x
+        self.y = y
+        self.dmg = dmg
+        self.velocity = (vX, vY)
+        self.img = pygame.image.load("img/bullet.png").convert_alpha()
+        self.img = pygame.transform.scale(self.img, (10, 10))
 
-#     def update(self):
-#         self.x += self.velocity[0]
-#         self.y += self.velocity[1]
+    def update(self):
+        self.x += self.velocity[0]
+        self.y += self.velocity[1]
         
-
-
-#     def is_outbound(self):
-#         screen_right = 1024
-#         screen_bottom = 768
-#         return True if (self.x<0 or self.x>screen_right or 
-#                         self.y<0 or self.y>screen_bottom) else False
+    def is_outbound(self):
+        screen_right = 1024
+        screen_bottom = 768
+        return True if (self.x<0 or self.x>screen_right or 
+                        self.y<0 or self.y>screen_bottom) else False
