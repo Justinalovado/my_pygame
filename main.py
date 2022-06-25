@@ -25,9 +25,11 @@ for i in range(randint(3,10)):
 
 # function for simulating all elements
 def update_elements(keys_pressed):
-    for enemy in enemies:
-        enemy.update()
-    player.update(keys_pressed, enemies)
+  for enemy in enemies:
+      enemy.update(player.getBullets())
+      if enemy.is_dead():
+        enemies.remove(enemy)
+  player.update(keys_pressed, enemies)
     
 def initialise_game():
     global player
@@ -48,6 +50,9 @@ def show_elements(screen):
     for enemy in enemies:
         enemy.show(screen)
     player.show(screen)
+    # bullets
+    for bullet in player.getBullets():
+      bullet.show(screen)
 
 while True:
     for event in pygame.event.get():
