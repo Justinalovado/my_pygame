@@ -1,6 +1,6 @@
 from random import randint
 from sys import exit
-from numpy import gradient
+from tkinter import font
 import pygame
 from Entity import Enemy, Player
 
@@ -9,16 +9,15 @@ pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((1024,768))
 
-background = pygame.image.load("img/background1.png")
-gameover_screen = pygame.image.load("img/gameover.png")
+background = pygame.image.load("img/background1.png").convert_alpha()
 gameover_cover = pygame.image.load("img/gameover_hollow_cover.png").convert_alpha()
-gradient_background = pygame.image.load("img/red_green_gradient.png")
+gradient_background = pygame.image.load("img/red_green_gradient.png").convert_alpha()
 
 pygame.display.set_caption("Da game")
 player = Player()
 enemies = []
 game_state = "gameon"
-gradient_height = 0
+revive_gauge = 0
     # randomly create enemies
 for i in range(randint(3,10)):
     enemies.append(Enemy())
@@ -30,17 +29,19 @@ def update_elements(keys_pressed):
     player.update(keys_pressed, enemies)
     
 def initialise_game():
+    screen.fill((88,88,88))
     global player
     player = Player()
     global enemies
     enemies = []
     global game_state
-    game_state = "gameon"
+    game_state = "gameset"
     for i in range(randint(3,10)):
         enemies.append(Enemy())
-    global gradient_height
-    gradient_height = 0
-    
+    global revive_gauge
+    revive_gauge = 0
+    global std_font
+    std_font = pygame.font.Font("font\yayusa3d.ttf", 64)
 
 # function to draw every element on screen
 def show_elements(screen):
@@ -48,6 +49,8 @@ def show_elements(screen):
     for enemy in enemies:
         enemy.show(screen)
     player.show(screen)
+
+initialise_game()
 
 while True:
     for event in pygame.event.get():
@@ -58,10 +61,13 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 exit()
+            elif event.key == pygame.K_SPACE and game_state!="gameon":
+                game_state = "gameon"
             else:
                 pass
     # collect data for updates
     keys_pressed = pygame.key.get_pressed()
+    # game on
     if game_state == "gameon":
         
         # simulate all elements' behaviour
@@ -72,17 +78,23 @@ while True:
 
         if player.is_dead():
             game_state = "gameover"
+
+    # game set
+    elif game_state == "gameset":
+        game_state = "idle"
+        # initialise_game()
+        text = std_font.render("Press SPACE to start", True, 'white', None)
+        screen.blit(text, (200,375))
+    # game over
     elif game_state == "gameover":
-        if keys_pressed[pygame.K_r]:
-            gradient_height -= 20
-        elif gradient_height<0:
-            gradient_height += 10
-        if gradient_height<-768:
-            initialise_game()
-            
-        # screen.blit(gameover_screen, (0,0))
-        screen.blit(gradient_background, (0, gradient_height))
+        screen.blit(gradient_background, (0, revive_gauge))
         screen.blit(gameover_cover, (0, 0))
+        if keys_pressed[pygame.K_r]:
+            revive_gauge -= 20
+        elif revive_gauge<0:
+            revive_gauge += 10
+        if revive_gauge<-768:
+            initialise_game()
         # game_state = "idle"
     else:
         pass
