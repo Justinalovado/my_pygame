@@ -25,7 +25,7 @@ def initialise_game():
     projectiles = []
     global game_state
     game_state = "gameset"
-    for i in range(randint(3,10)):
+    for i in range(randint(3,5)):
         enemies.append(Enemy())
     global revive_gauge
     revive_gauge = 0

@@ -98,12 +98,15 @@ class Player:
     def is_taking_melee(self, enemies):
         for enemy in enemies:
             if pygame.Rect.colliderect(self.hitbox, enemy.hitbox):
-                self.take_dmg(enemy.attack_point)
+                self.take_dmg(enemy.attack_point, enemy.name)
 
-    def take_dmg(self, dmg):
+    def take_dmg(self, dmg, source=None):
         if self.is_invincible == False:
             self.health -= dmg
-            print(f"Player took {dmg} dmg, current health is {self.health}")
+            if source:
+                print(f"{self.name} took {dmg} dmg from {source}, current health is {self.health}")
+            else:
+                print(f"{self.name} took eMOtional dmg, current health is {self.health}")
             self.is_invincible = True
             self.invinc_countdown = 60
 
@@ -158,10 +161,12 @@ class Enemy:
     #         if pygame.Rect.colliderect(self.hitbox, bullet.hitbox):
     #             self.take_dmg(bullet.dmg)
 
-    def take_dmg(self, dmg):
+    def take_dmg(self, dmg, source=None):
         self.health -= dmg
-        print(f"{self.name} took {dmg} dmg, current health is {self.health}")
-
+        if source:
+            print(f"{self.name} took {dmg} dmg from {source}, current health is {self.health}")
+        else:
+            print(f"{self.name} took eMOtional dmg, current health is {self.health}")
     def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
         if show_hitbox:
@@ -212,7 +217,7 @@ class Bullet:
             if pygame.Rect.colliderect(self.hitbox, entity.hitbox):
                 relation = [self.source, entity.name]
                 if relation in HOSTILITY_LIST or relation[::-1] in HOSTILITY_LIST:
-                    entity.take_dmg(self.dmg)
+                    entity.take_dmg(self.dmg, self.source)
                     if self.pierce > 0:
                         self.pierce -= 1
                     else:
