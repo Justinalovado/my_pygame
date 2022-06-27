@@ -1,7 +1,8 @@
 from random import randint
 from turtle import left, screensize
 import pygame
-# from pyrsistent import T
+
+
 # ATTACKSTATE NEEDS TO BE ADDED, ENEMY-BULLET HITBOX COLLISION EVENTS HAVE MINOR BUGS (ENEMIES DONT GET DMG EVEN WHEN THEY COLLIDE)
 SECOND = 60
 BULLETSPEED = 4
@@ -19,6 +20,7 @@ class Player:
         self.width = self.img.get_width()
         self.height = self.img.get_height()
         self.hitbox = self.img.get_rect()
+        
         self.is_invincible = False
         self.invinc_countdown = 0
         self.bullets = []
@@ -95,8 +97,7 @@ class Enemy:
         self.height = self.img.get_height()
         self.x = x if x != None else randint(0, 1024 - self.width)
         self.y = y if y != None else randint(0, 768 - self.width)
-        # self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.hitbox = self.img.get_rect()
+        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         self.health = 100
         self.velocity = (randint(0, 5), randint(0, 5))
         self.attack_point = 10
@@ -105,7 +106,7 @@ class Enemy:
     def update(self, bullets):
         self.move()
         self.is_taking_range(bullets)
-
+        
     def move(self):
         self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
         screen_right = 1024 - self.width
@@ -132,8 +133,10 @@ class Enemy:
         self.health -= dmg
         print(f"{self.name} took {dmg} dmg, current health is {self.health}")
 
-    def show(self, screen):
+    def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
+        if show_hitbox:
+            pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
 
     def is_dead(self):
         return True if self.health <= 0 else False
@@ -150,19 +153,23 @@ class Bullet:
         self.img = pygame.transform.scale(self.img, (10, 10))
         self.width = self.img.get_width()
         self.height = self.img.get_height()
-        # self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.hitbox = self.img.get_rect()
+        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        # self.hitbox = self.img.get_rect()
         
 
     def update(self):
         self.x += self.velocity[0] * self.speed
         self.y += self.velocity[1] * self.speed
-
+        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
     def is_outbound(self):
         screen_right = 1024
         screen_bottom = 768
         return True if (self.x < 0 or self.x > screen_right or self.y < 0
                         or self.y > screen_bottom) else False
 
-    def show(self, screen):
+    def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
+        if show_hitbox:
+            pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
+
+        
