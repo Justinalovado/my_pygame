@@ -32,12 +32,22 @@ def initialise_game():
 
 # function for simulating all elements
 def update_elements(keys_pressed):
-  for enemy in enemies:
-      enemy.update(player.getBullets())
-      if enemy.is_dead():
-        enemies.remove(enemy)
-  player.update(keys_pressed, enemies)
- 
+    # for enemy in enemies:
+    #     enemy.update(player.getBullets())
+    #     if enemy.is_dead():
+    #         enemies.remove(enemy)
+    for enemy in enemies:
+        enemy.update()
+        if enemy.is_dead():
+            enemies.remove(enemy)
+    player.update(keys_pressed, enemies, projectiles)
+    for projectile in projectiles:
+        projectile.update(enemies + [player])
+        if projectile.is_dead():
+            projectiles.remove(projectile)
+    if player.is_dead():
+        global game_state
+        game_state = "gameover"
 
 # function to draw every element on screen
 def show_elements(screen):
@@ -46,8 +56,8 @@ def show_elements(screen):
         enemy.show(screen)
     player.show(screen)
     # bullets
-    for bullet in player.getBullets():
-      bullet.show(screen)
+    for projectile in projectiles:
+        projectile.show(screen)
 
 initialise_game()
 while True:
@@ -74,9 +84,6 @@ while True:
         # render all elements
         show_elements(screen)
 
-        if player.is_dead():
-            game_state = "gameover"
-
     # game set
     elif game_state == "gameset":
         game_state = "idle"
@@ -89,9 +96,9 @@ while True:
         screen.blit(GAMEOVER_COVER, (0, 0))
         if keys_pressed[pygame.K_r]:
             revive_gauge -= 20
-        elif revive_gauge<0:
+        elif revive_gauge < 0:
             revive_gauge += 10
-        if revive_gauge<-768:
+        if revive_gauge < -768:
             initialise_game()
     else:
         pass

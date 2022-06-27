@@ -1,13 +1,17 @@
+
 from random import randint
 from turtle import left, screensize
+from pkg_resources import ensure_directory
 import pygame
 
 
-# ATTACKSTATE NEEDS TO BE ADDED, ENEMY-BULLET HITBOX COLLISION EVENTS HAVE MINOR BUGS (ENEMIES DONT GET DMG EVEN WHEN THEY COLLIDE)
+# ATTACKSTATE NEEDS TO BE ADDED
 SECOND = 60
 BULLETSPEED = 4
 ATTACKSTATE = 0.5 * SECOND
-
+HOSTILITY_LIST = [
+    ['player', 'enemy'],
+]
 
 class Player:
     def __init__(self) -> None:
@@ -20,25 +24,34 @@ class Player:
         self.width = self.img.get_width()
         self.height = self.img.get_height()
         self.hitbox = self.img.get_rect()
-        
         self.is_invincible = False
         self.invinc_countdown = 0
-        self.bullets = []
+        # self.bullets = []
         self.bulletVelocity = (1, 1)
+        self.name = "player"
 
-    def update(self, keys, enemies):
+    def update(self, keys, enemies, projectiles):
         self.move(keys)
         self.is_taking_melee(enemies)
         if self.invinc_countdown > 0:
             self.invinc_countdown -= 1
         else:
             self.is_invincible = False
-        if self.health <= 0:
-            self.dead = True
+        # if self.health <= 0:
+        #     self.dead = True
+        if keys[pygame.K_k]:
+            projectiles.append(Bullet(
+                self.x,
+                self.y, 
+                self.attack_point,
+                self.bulletVelocity[0], 
+                self.bulletVelocity[1],
+                self.name
+            ))
         # updating bullets
-        for bullet in self.bullets:
-            bullet.update()
-        self.bullets = [b for b in self.bullets if not b.is_outbound()]
+        # for bullet in self.bullets:
+        #     bullet.update()
+        # self.bullets = [b for b in self.bullets if not b.is_outbound()]
 
     def move(self, keys):
         velocity = (0, 0)
@@ -52,10 +65,10 @@ class Player:
             velocity = (velocity[0], -self.speed)
         if velocity != (0, 0):
             self.bulletVelocity = velocity
-        if keys[pygame.K_k]:
-            self.bullets.append(
-                Bullet(self.x, self.y, self.attack_point,
-                       self.bulletVelocity[0], self.bulletVelocity[1]))
+        # if keys[pygame.K_k]:
+        #     self.bullets.append(
+        #         Bullet(self.x, self.y, self.attack_point,
+        #                self.bulletVelocity[0], self.bulletVelocity[1]))
         self.x, self.y = self.x + velocity[0], self.y + velocity[1]
         pygame.Rect.move_ip(self.hitbox, velocity[0], velocity[1])
         if self.is_outbound():
@@ -81,10 +94,12 @@ class Player:
             self.invinc_countdown = 60
 
     def is_dead(self):
-        return True if self.health <= 0 else False
-
-    def show(self, screen):
+        # return True if self.health <= 0 else False
+        return self.health <= 0
+    def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
+        if show_hitbox:
+            pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
 
     def getBullets(self):
         return self.bullets
@@ -99,13 +114,13 @@ class Enemy:
         self.y = y if y != None else randint(0, 768 - self.width)
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         self.health = 100
-        self.velocity = (randint(0, 5), randint(0, 5))
+        self.velocity = (randint(1, 3), randint(1, 3))
         self.attack_point = 10
-        self.name = "Enemy"
+        self.name = "enemy"
 
-    def update(self, bullets):
+    def update(self, bullets=[]):
         self.move()
-        self.is_taking_range(bullets)
+        # self.is_taking_range(bullets)
         
     def move(self):
         self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
@@ -124,10 +139,10 @@ class Enemy:
         return True if (self.x < 0 or self.x > screen_right or self.y < 0
                         or self.y > screen_bottom) else False
 
-    def is_taking_range(self, bullets):
-        for bullet in bullets:
-            if pygame.Rect.colliderect(self.hitbox, bullet.hitbox):
-                self.take_dmg(bullet.dmg)
+    # def is_taking_range(self, bullets):
+    #     for bullet in bullets:
+    #         if pygame.Rect.colliderect(self.hitbox, bullet.hitbox):
+    #             self.take_dmg(bullet.dmg)
 
     def take_dmg(self, dmg):
         self.health -= dmg
@@ -139,11 +154,11 @@ class Enemy:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
 
     def is_dead(self):
-        return True if self.health <= 0 else False
-
+        # return True if self.health <= 0 else False
+        return self.health <= 0
 
 class Bullet:
-    def __init__(self, x, y, dmg, vX, vY) -> None:
+    def __init__(self, x, y, dmg, vX, vY, source) -> None:
         self.x = x
         self.y = y
         self.dmg = dmg
@@ -154,13 +169,16 @@ class Bullet:
         self.width = self.img.get_width()
         self.height = self.img.get_height()
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
-        # self.hitbox = self.img.get_rect()
+        self.source = source
+        self.pierce = 0
+        self.dead = False
         
 
-    def update(self):
+    def update(self, entities):
         self.x += self.velocity[0] * self.speed
         self.y += self.velocity[1] * self.speed
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.check_hit(entities)
     def is_outbound(self):
         screen_right = 1024
         screen_bottom = 768
@@ -171,5 +189,18 @@ class Bullet:
         screen.blit(self.img, (self.x, self.y))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
+    
+    def is_dead(self):
+        return self.dead
 
+    def check_hit(self, entities):
+        for entity in entities:
+            if pygame.Rect.colliderect(self.hitbox, entity.hitbox):
+                relation = [self.source, entity.name]
+                if relation in HOSTILITY_LIST or relation[::-1] in HOSTILITY_LIST:
+                    entity.take_dmg(self.dmg)
+                    if self.pierce > 0:
+                        self.pierce -= 1
+                    else:
+                        self.dead = True
         
