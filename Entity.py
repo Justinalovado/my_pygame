@@ -29,6 +29,9 @@ class Player:
         # self.bullets = []
         self.bulletVelocity = (1, 1)
         self.name = "player"
+        self.is_reloaded = True
+        self.reload_tick = 0
+
 
     def update(self, keys, enemies, projectiles):
         self.move(keys)
@@ -40,6 +43,14 @@ class Player:
         # if self.health <= 0:
         #     self.dead = True
         if keys[pygame.K_k]:
+            self.attack(projectiles)
+        # updating bullets
+        # for bullet in self.bullets:
+        #     bullet.update()
+        # self.bullets = [b for b in self.bullets if not b.is_outbound()]
+
+    def attack(self, projectiles):
+        if self.is_reloaded:
             projectiles.append(Bullet(
                 self.x,
                 self.y, 
@@ -48,11 +59,14 @@ class Player:
                 self.bulletVelocity[1],
                 self.name
             ))
-        # updating bullets
-        # for bullet in self.bullets:
-        #     bullet.update()
-        # self.bullets = [b for b in self.bullets if not b.is_outbound()]
-
+            self.is_reloaded = False
+            self.reload_tick = 0.5 * SECOND
+        else:
+            if self.reload_tick > 0:
+                self.reload_tick -= 1
+            else:
+                self.reload_tick = 0
+                self.is_reloaded = True
     def move(self, keys):
         velocity = (0, 0)
         if keys[pygame.K_d]:
