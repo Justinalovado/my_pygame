@@ -1,7 +1,6 @@
 
 from random import randint
-from turtle import left, screensize
-from pkg_resources import ensure_directory
+from sys import flags
 import pygame
 
 
@@ -12,21 +11,26 @@ ATTACKSTATE = 0.5 * SECOND
 HOSTILITY_LIST = [
     ['player', 'enemy'],
 ]
+dummy_screen = pygame.display.set_mode((1024,768))
+PLAYER_CENTER = pygame.image.load("img/player/center.png").convert_alpha()
+PLAYER_UP = pygame.image.load("img/player/up.png").convert_alpha()
+PLAYER_DOWN = pygame.image.load("img/player/down.png").convert_alpha()
+PLAYER_RIGHT = pygame.image.load("img/player/right.png").convert_alpha()
+PLAYER_LEFT = pygame.image.load("img/player/left.png").convert_alpha()
 
 class Player:
     def __init__(self) -> None:
         self.x = 0
         self.y = 0
-        self.health = 30
+        self.health = 50
         self.attack_point = 10
         self.speed = 3
-        self.img = pygame.image.load("img/man.png").convert_alpha()
+        self.img = PLAYER_CENTER
         self.width = self.img.get_width()
         self.height = self.img.get_height()
         self.hitbox = self.img.get_rect()
         self.is_invincible = False
         self.invinc_countdown = 0
-        # self.bullets = []
         self.bulletVelocity = (1, 1)
         self.name = "player"
         self.is_reloaded = True
@@ -40,14 +44,8 @@ class Player:
             self.invinc_countdown -= 1
         else:
             self.is_invincible = False
-        # if self.health <= 0:
-        #     self.dead = True
         if keys[pygame.K_k]:
             self.attack(projectiles)
-        # updating bullets
-        # for bullet in self.bullets:
-        #     bullet.update()
-        # self.bullets = [b for b in self.bullets if not b.is_outbound()]
 
     def attack(self, projectiles):
         if self.is_reloaded:
@@ -60,7 +58,7 @@ class Player:
                 self.name
             ))
             self.is_reloaded = False
-            self.reload_tick = 0.5 * SECOND
+            self.reload_tick = 0.2 * SECOND
         else:
             if self.reload_tick > 0:
                 self.reload_tick -= 1
@@ -69,20 +67,27 @@ class Player:
                 self.is_reloaded = True
     def move(self, keys):
         velocity = (0, 0)
-        if keys[pygame.K_d]:
-            velocity = (self.speed, velocity[1])
-        if keys[pygame.K_a]:
-            velocity = (-self.speed, velocity[1])
+        flag = 1
         if keys[pygame.K_s]:
             velocity = (velocity[0], self.speed)
+            self.img = PLAYER_DOWN
+            flag = 0
         if keys[pygame.K_w]:
             velocity = (velocity[0], -self.speed)
+            self.img = PLAYER_UP
+            flag = 0
+        if keys[pygame.K_d]:
+            velocity = (self.speed, velocity[1])
+            self.img = PLAYER_RIGHT
+            flag = 0
+        if keys[pygame.K_a]:
+            velocity = (-self.speed, velocity[1])
+            self.img = PLAYER_LEFT
+            flag = 0
+        if flag:
+            self.img = PLAYER_CENTER
         if velocity != (0, 0):
             self.bulletVelocity = velocity
-        # if keys[pygame.K_k]:
-        #     self.bullets.append(
-        #         Bullet(self.x, self.y, self.attack_point,
-        #                self.bulletVelocity[0], self.bulletVelocity[1]))
         self.x, self.y = self.x + velocity[0], self.y + velocity[1]
         pygame.Rect.move_ip(self.hitbox, velocity[0], velocity[1])
         if self.is_outbound():
@@ -111,8 +116,8 @@ class Player:
             self.invinc_countdown = 60
 
     def is_dead(self):
-        # return True if self.health <= 0 else False
         return self.health <= 0
+
     def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
         if show_hitbox:
@@ -130,14 +135,13 @@ class Enemy:
         self.x = x if x != None else randint(0, 1024 - self.width)
         self.y = y if y != None else randint(0, 768 - self.width)
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.health = 100
+        self.health = 30
         self.velocity = (randint(1, 3), randint(1, 3))
         self.attack_point = 10
         self.name = "enemy"
 
-    def update(self, bullets=[]):
+    def update(self):
         self.move()
-        # self.is_taking_range(bullets)
         
     def move(self):
         self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
@@ -156,11 +160,6 @@ class Enemy:
         return True if (self.x < 0 or self.x > screen_right or self.y < 0
                         or self.y > screen_bottom) else False
 
-    # def is_taking_range(self, bullets):
-    #     for bullet in bullets:
-    #         if pygame.Rect.colliderect(self.hitbox, bullet.hitbox):
-    #             self.take_dmg(bullet.dmg)
-
     def take_dmg(self, dmg, source=None):
         self.health -= dmg
         if source:
@@ -173,7 +172,6 @@ class Enemy:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
 
     def is_dead(self):
-        # return True if self.health <= 0 else False
         return self.health <= 0
 
 class Bullet:

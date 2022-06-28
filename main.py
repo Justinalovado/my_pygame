@@ -32,19 +32,15 @@ def initialise_game():
 
 # function for simulating all elements
 def update_elements(keys_pressed):
-    # for enemy in enemies:
-    #     enemy.update(player.getBullets())
-    #     if enemy.is_dead():
-    #         enemies.remove(enemy)
     for enemy in enemies:
         enemy.update()
         if enemy.is_dead():
             enemies.remove(enemy)
-    player.update(keys_pressed, enemies, projectiles)
     for projectile in projectiles:
         projectile.update(enemies + [player])
         if projectile.is_dead():
             projectiles.remove(projectile)
+    player.update(keys_pressed, enemies, projectiles)
     if player.is_dead():
         global game_state
         game_state = "gameover"
@@ -87,7 +83,6 @@ while True:
     # game set
     elif game_state == "gameset":
         game_state = "idle"
-        # initialise_game()
         text = STD_FONT.render("Press SPACE to start", True, 'white', None)
         screen.blit(text, (200,375))
     # game over
