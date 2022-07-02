@@ -23,9 +23,9 @@ class Remote_controlled_bullet:
 
 
     def update(self, player):
-        self.is_picked(player)
+        self.is_picked_up(player)
     
-    def is_picked(self, player):
+    def is_picked_up(self, player):
         if pygame.Rect.colliderect(player.hitbox, self.hitbox):
             pass
         
