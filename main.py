@@ -1,8 +1,8 @@
-from random import randint
+from random import randint,choice
 from sys import exit
 import pygame
 from Entity import Enemy, Player
-
+from Item import Init_items
 # initialization
 pygame.init()
 clock = pygame.time.Clock()
@@ -11,7 +11,7 @@ screen = pygame.display.set_mode((1024,768))
 BACKGROUND = pygame.image.load("img/background1.png").convert_alpha()
 GAMEOVER_COVER = pygame.image.load("img/gameover_hollow_cover.png").convert_alpha()
 GRADIENT_BACKGROUND = pygame.image.load("img/red_green_gradient.png").convert_alpha()
-STD_FONT = pygame.font.Font("font\yayusa3d.ttf", 64)
+STD_FONT = pygame.font.Font("font/yayusa3d.ttf", 64)
 pygame.display.set_caption("Da game")
 
 
@@ -24,6 +24,13 @@ def initialise_game():
     global projectiles
     projectiles = []
     global game_state
+    itemlist = Init_items()
+    global items
+    items = []
+    for i in range(randint(1,2)):
+        items.append(choice(itemlist.list))
+    print(items)
+    
     game_state = "gameset"
     for i in range(randint(3,5)):
         enemies.append(Enemy())
@@ -40,6 +47,8 @@ def update_elements(keys_pressed):
         projectile.update(enemies + [player])
         if projectile.is_dead():
             projectiles.remove(projectile)
+    for item in items:
+        item.update(player)
     player.update(keys_pressed, enemies, projectiles)
     if player.is_dead():
         global game_state

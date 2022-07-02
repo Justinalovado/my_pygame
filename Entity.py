@@ -8,6 +8,8 @@ import pygame
 SECOND = 60
 BULLETSPEED = 4
 ATTACKSTATE = 0.5 * SECOND
+PLAYER_RELOAD_TIME = 0.2 
+
 HOSTILITY_LIST = [
     ['player', 'enemy'],
 ]
@@ -58,7 +60,7 @@ class Player:
                 self.name
             ))
             self.is_reloaded = False
-            self.reload_tick = 0.2 * SECOND
+            self.reload_tick = PLAYER_RELOAD_TIME * SECOND
         else:
             if self.reload_tick > 0:
                 self.reload_tick -= 1
@@ -123,8 +125,8 @@ class Player:
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
 
-    def getBullets(self):
-        return self.bullets
+    
+    
 
 
 class Enemy:
