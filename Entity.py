@@ -52,8 +52,8 @@ class Player:
     def attack(self, projectiles):
         if self.is_reloaded:
             projectiles.append(Bullet(
-                self.x,
-                self.y, 
+                self.x + self.width / 2,
+                self.y + self.width / 2, 
                 self.attack_point,
                 self.bulletVelocity[0], 
                 self.bulletVelocity[1],
@@ -178,8 +178,6 @@ class Enemy:
 
 class Bullet:
     def __init__(self, x, y, dmg, vX, vY, source) -> None:
-        self.x = x
-        self.y = y
         self.dmg = dmg
         self.velocity = (vX, vY)
         self.speed = BULLETSPEED
@@ -187,6 +185,8 @@ class Bullet:
         self.img = pygame.transform.scale(self.img, (10, 10))
         self.width = self.img.get_width()
         self.height = self.img.get_height()
+        self.x = x - self.width / 2
+        self.y = y - self.height / 2
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         self.source = source
         self.pierce = 0
