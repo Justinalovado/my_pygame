@@ -1,4 +1,3 @@
-
 from random import randint
 from sys import flags
 import pygame
@@ -9,7 +8,7 @@ SECOND = 60
 BULLETSPEED = 4
 ATTACKSTATE = 0.5 * SECOND
 PLAYER_RELOAD_TIME = 0.2 
-
+PROJECTILES_LIMIT = 4 
 HOSTILITY_LIST = [
     ['player', 'enemy'],
 ]
@@ -34,10 +33,11 @@ class Player:
         self.is_invincible = False
         self.invinc_countdown = 0
         self.bulletVelocity = (1, 1)
+        self.remoteVelocity = self.bulletVelocity 
         self.name = "player"
         self.is_reloaded = True
         self.reload_tick = 0
-
+        self.remote_bullet_item = False
 
     def update(self, keys, enemies, projectiles):
         self.move(keys)
@@ -50,7 +50,7 @@ class Player:
             self.attack(projectiles)
 
     def attack(self, projectiles):
-        if self.is_reloaded:
+        if self.is_reloaded and not self.is_overloaded(projectiles):
             projectiles.append(Bullet(
                 self.x + self.width / 2,
                 self.y + self.width / 2, 
@@ -67,6 +67,8 @@ class Player:
             else:
                 self.reload_tick = 0
                 self.is_reloaded = True
+                
+                
     def move(self, keys):
         velocity = (0, 0)
         flag = 1
@@ -74,21 +76,25 @@ class Player:
             velocity = (velocity[0], self.speed)
             self.img = PLAYER_DOWN
             flag = 0
+            self.remoteVelocity = velocity
         if keys[pygame.K_w]:
             velocity = (velocity[0], -self.speed)
             self.img = PLAYER_UP
             flag = 0
+            self.remoteVelocity = velocity
         if keys[pygame.K_d]:
             velocity = (self.speed, velocity[1])
             self.img = PLAYER_RIGHT
             flag = 0
+            self.remoteVelocity = velocity
         if keys[pygame.K_a]:
             velocity = (-self.speed, velocity[1])
             self.img = PLAYER_LEFT
             flag = 0
+            self.remoteVelocity = velocity
         if flag:
             self.img = PLAYER_CENTER
-        if velocity != (0, 0):
+        if velocity != (0, 0) and not self.remote_bullet_item:
             self.bulletVelocity = velocity
         self.x, self.y = self.x + velocity[0], self.y + velocity[1]
         pygame.Rect.move_ip(self.hitbox, velocity[0], velocity[1])
@@ -119,12 +125,18 @@ class Player:
 
     def is_dead(self):
         return self.health <= 0
-
+    
     def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
-
+    def is_overloaded(self, projectiles):
+        if not self.remote_bullet_item:
+            return False
+        if self.remote_bullet_item and len(projectiles) >= PROJECTILES_LIMIT:
+            return True
+        
+        
     
     
 
@@ -201,8 +213,8 @@ class Bullet:
     def is_outbound(self):
         screen_right = 1024
         screen_bottom = 768
-        return True if (self.x < 0 or self.x > screen_right or self.y < 0
-                        or self.y > screen_bottom) else False
+        return True if (self.x < 0 or self.x > screen_right-self.width or self.y < 0
+                        or self.y > screen_bottom-self.height) else False
 
     def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.x, self.y))
@@ -222,4 +234,4 @@ class Bullet:
                         self.pierce -= 1
                     else:
                         self.dead = True
-        
+                        

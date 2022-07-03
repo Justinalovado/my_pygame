@@ -1,4 +1,4 @@
-from random import randint,choice
+from random import randint
 from sys import exit
 import pygame
 from Entity import Enemy, Player
@@ -13,7 +13,8 @@ GAMEOVER_COVER = pygame.image.load("img/gameover_hollow_cover.png").convert_alph
 GRADIENT_BACKGROUND = pygame.image.load("img/red_green_gradient.png").convert_alpha()
 STD_FONT = pygame.font.Font("font/yayusa3d.ttf", 64)
 pygame.display.set_caption("Da game")
-
+MIN_ITEM = 1
+MAX_ITEM = 7
 
 def initialise_game():
     screen.fill((88,88,88))
@@ -27,8 +28,8 @@ def initialise_game():
     itemlist = Init_items()
     global items
     items = []
-    for i in range(randint(1,2)):
-        items.append(choice(itemlist.list))
+    for i in range(randint(MIN_ITEM, MAX_ITEM)):
+        items.append(itemlist.list[randint(0, len(itemlist.list)-1)]())
     print(items)
     
     game_state = "gameset"
@@ -44,11 +45,16 @@ def update_elements(keys_pressed):
         if enemy.is_dead():
             enemies.remove(enemy)
     for projectile in projectiles:
+        if player.remote_bullet_item:
+            projectile.velocity = player.remoteVelocity
         projectile.update(enemies + [player])
-        if projectile.is_dead():
+        if projectile.is_dead() or projectile.is_outbound():
             projectiles.remove(projectile)
+        
+    # items
     for item in items:
-        item.update(player)
+        item.update(player, screen, items)
+    
     player.update(keys_pressed, enemies, projectiles)
     if player.is_dead():
         global game_state
@@ -63,6 +69,9 @@ def show_elements(screen):
     # bullets
     for projectile in projectiles:
         projectile.show(screen)
+    # items
+    for item in items:
+        item.show(screen)
 
 initialise_game()
 while True:

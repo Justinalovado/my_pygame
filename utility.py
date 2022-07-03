@@ -1,7 +1,7 @@
 import pygame
 # file containing utility classes
 # does not need to be implemented
-class Corrdinate:
+class Coordinate:
     def __init__(self, topLeftX, topLeftY, width, height) -> None:
         self.topLeftX = topLeftX
         self.topLeftY = topLeftY
@@ -15,5 +15,5 @@ class Hitbox:
     
 class Cooldown:
     def __init__(self) -> None:
-        self.invinvible = 0
+        self.invincible = 0
         self.reload = 0
