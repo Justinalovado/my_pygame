@@ -2,7 +2,7 @@ from math import acos, sqrt
 import pygame
 # file containing utility classes
 # does not need to be implemented
-  
+
 class State:
     def __init__(self, cooldown=0, duration=1) -> None:
         self.cooldown = cooldown
@@ -36,6 +36,7 @@ class Point:
             self.x, self.y = tup[0], tup[1]
         else:
             self.x, self.y = x, y
+    
 
     # move point to (x, y)
     def move_to(self, point=None, targetX=0, targetY=0):
@@ -107,3 +108,4 @@ class Body:
         self.hitbox.move_ip(x, y)
     def move_to(self, x, y):
         self.update(x, y, self.width, self.height)
+
