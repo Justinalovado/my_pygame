@@ -11,7 +11,7 @@ screen = pygame.display.set_mode((1024,768))
 BACKGROUND = pygame.image.load("img/background1.png").convert_alpha()
 GAMEOVER_COVER = pygame.image.load("img/gameover_hollow_cover.png").convert_alpha()
 GRADIENT_BACKGROUND = pygame.image.load("img/red_green_gradient.png").convert_alpha()
-STD_FONT = pygame.font.Font("font\yayusa3d.ttf", 64)
+STD_FONT = pygame.font.Font("font/yayusa3d.ttf", 64)
 pygame.display.set_caption("Da game")
 
 
@@ -100,7 +100,3 @@ while True:
         
     pygame.display.update()
     clock.tick(60)
-
-
-
-        
