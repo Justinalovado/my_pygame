@@ -2,7 +2,7 @@ from random import randint
 from sys import flags
 import pygame
 
-
+pygame.init()
 # ATTACKSTATE NEEDS TO BE ADDED
 SECOND = 60
 BULLETSPEED = 4
@@ -18,6 +18,7 @@ PLAYER_UP = pygame.image.load("img/player/up.png").convert_alpha()
 PLAYER_DOWN = pygame.image.load("img/player/down.png").convert_alpha()
 PLAYER_RIGHT = pygame.image.load("img/player/right.png").convert_alpha()
 PLAYER_LEFT = pygame.image.load("img/player/left.png").convert_alpha()
+HEALTH_FONT = pygame.font.Font("font/xeros_karma.ttf", 32)
 
 class Player:
     def __init__(self) -> None:
@@ -48,7 +49,7 @@ class Player:
             self.is_invincible = False
         if keys[pygame.K_k]:
             self.attack(projectiles)
-
+        
     def attack(self, projectiles):
         if self.is_reloaded and not self.is_overloaded(projectiles):
             projectiles.append(Bullet(
@@ -130,6 +131,9 @@ class Player:
         screen.blit(self.img, (self.x, self.y))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
+        health_txt = HEALTH_FONT.render(str(self.health), True, 'green', None)
+        screen.blit(health_txt, (20, 0))
+
     def is_overloaded(self, projectiles):
         if not self.remote_bullet_item:
             return False
