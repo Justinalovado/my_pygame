@@ -78,7 +78,8 @@ class Point:
         t = [point.x, point.y] if point else [targetX, targetY]
         vB = [t[0] - self.x, t[1] - self.y]
         return acos(dot(vA, vB)/(mod(vA)*mod(vB)))
-        
+    def to_tup(self):
+        return (self.x, self.y)
 class Body:
     def __init__(self,topLeftX, topLeftY, width, height, img) -> None:
         self.hitbox = pygame.Rect(topLeftX, topLeftY, width=width, height=height)

@@ -1,5 +1,6 @@
 from random import randint
 from sys import flags
+from numpy import histogram
 import pygame
 
 pygame.init()
@@ -21,16 +22,21 @@ PLAYER_LEFT = pygame.image.load("img/player/left.png").convert_alpha()
 HEALTH_FONT = pygame.font.Font("font/xeros_karma.ttf", 32)
 
 class Player:
-    def __init__(self) -> None:
-        self.x = 0
-        self.y = 0
+    def __init__(self, x, y) -> None:
+        # self.x = 0
+        # self.y = 0
+        # self.width = self.img.get_width()
+        # self.height = self.img.get_height()
+        # self.hitbox = self.img.get_rect()
         self.health = 50
         self.attack_point = 10
         self.speed = 3
         self.img = PLAYER_CENTER
-        self.width = self.img.get_width()
-        self.height = self.img.get_height()
-        self.hitbox = self.img.get_rect()
+
+
+        self.hitbox = pygame.Rect(x, y, self.img.get_width(), self.img.get_height())
+
+
         self.is_invincible = False
         self.invinc_countdown = 0
         self.bulletVelocity = (1, 1)
@@ -53,8 +59,10 @@ class Player:
     def attack(self, projectiles):
         if self.is_reloaded and not self.is_overloaded(projectiles):
             projectiles.append(Bullet(
-                self.x + self.width / 2,
-                self.y + self.width / 2, 
+                # self.x + self.width / 2,
+                self.hitbox.centerx,
+                # self.y + self.width / 2,
+                self.hitbox.centery,
                 self.attack_point,
                 self.bulletVelocity[0], 
                 self.bulletVelocity[1],
@@ -97,17 +105,19 @@ class Player:
             self.img = PLAYER_CENTER
         if velocity != (0, 0) and not self.remote_bullet_item:
             self.bulletVelocity = velocity
-        self.x, self.y = self.x + velocity[0], self.y + velocity[1]
+        # self.x, self.y = self.x + velocity[0], self.y + velocity[1]
         pygame.Rect.move_ip(self.hitbox, velocity[0], velocity[1])
         if self.is_outbound():
-            self.x, self.y = self.x - velocity[0], self.y - velocity[1]
+            # self.x, self.y = self.x - velocity[0], self.y - velocity[1]
             pygame.Rect.move_ip(self.hitbox, -velocity[0], -velocity[1])
 
     def is_outbound(self):
-        screen_right = 1024 - self.width
-        screen_bottom = 768 - self.width
-        return True if (self.x < 0 or self.x > screen_right or self.y < 0
-                        or self.y > screen_bottom) else False
+        screen_right = 1024 - self.hitbox.width
+        screen_bottom = 768 - self.hitbox.height
+        return True if (self.hitbox.left < 0 or 
+                        self.hitbox.left > screen_right or 
+                        self.hitbox.top < 0 or 
+                        self.hitbox.top > screen_bottom) else False
 
     def is_taking_melee(self, enemies):
         for enemy in enemies:
@@ -128,7 +138,7 @@ class Player:
         return self.health <= 0
     
     def show(self, screen, show_hitbox=True):
-        screen.blit(self.img, (self.x, self.y))
+        screen.blit(self.img, (self.hitbox.left, self.hitbox.top))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
         health_txt = HEALTH_FONT.render(str(self.health), True, 'green', None)
@@ -148,11 +158,16 @@ class Player:
 class Enemy:
     def __init__(self, x=None, y=None) -> None:
         self.img = pygame.image.load("img/enemy.png").convert_alpha()
-        self.width = self.img.get_width()
-        self.height = self.img.get_height()
-        self.x = x if x != None else randint(0, 1024 - self.width)
-        self.y = y if y != None else randint(0, 768 - self.width)
-        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        width = self.img.get_width()
+        height = self.img.get_height()
+        self.hitbox = pygame.Rect(
+            x if x != None else randint(0, 1024 - width),
+            y if y != None else randint(0, 768 - height),
+            width,
+            height
+        )
+        # self.x = x if x != None else randint(0, 1024 - self.width)
+        # self.y = y if y != None else randint(0, 768 - self.width)
         self.health = 30
         self.velocity = (randint(1, 3), randint(1, 3))
         self.attack_point = 10
@@ -162,21 +177,25 @@ class Enemy:
         self.move()
         
     def move(self):
-        self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
-        screen_right = 1024 - self.width
-        screen_bottom = 768 - self.width
-        if self.x < 0 or self.x > screen_right:
+        # self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
+        screen_right = 1024 - self.hitbox.width
+        screen_bottom = 768 - self.hitbox.height
+        if self.hitbox.left < 0 or self.hitbox.left > screen_right:
             self.velocity = (-self.velocity[0], self.velocity[1])
-        if self.y < 0 or self.y > screen_bottom:
+        if self.hitbox.top < 0 or self.hitbox.top > screen_bottom:
             self.velocity = (self.velocity[0], -self.velocity[1])
-        self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
-        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        
+        # self.x, self.y = self.x - self.velocity[0], self.y - self.velocity[1]
+        # self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        pygame.Rect.move_ip(self.hitbox, self.velocity[0], self.velocity[1])
 
     def is_outbound(self):
-        screen_right = 1024 - self.width
-        screen_bottom = 768 - self.width
-        return True if (self.x < 0 or self.x > screen_right or self.y < 0
-                        or self.y > screen_bottom) else False
+        screen_right = 1024 - self.hitbox.width
+        screen_bottom = 768 - self.hitbox.height
+        return True if (self.hitbox.left < 0 or 
+                        self.hitbox.left > screen_right or 
+                        self.hitbox.top < 0 or 
+                        self.hitbox.top > screen_bottom) else False
 
     def take_dmg(self, dmg, source=None):
         self.health -= dmg
@@ -185,7 +204,7 @@ class Enemy:
         else:
             print(f"{self.name} took eMOtional dmg, current health is {self.health}")
     def show(self, screen, show_hitbox=True):
-        screen.blit(self.img, (self.x, self.y))
+        screen.blit(self.img, (self.hitbox.left, self.hitbox.top))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
 

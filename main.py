@@ -2,7 +2,7 @@ from random import randint
 from sys import exit
 import pygame
 from Entity import Enemy, Player
-from Item import Init_items
+from Item import ITEM_LIST
 # initialization
 pygame.init()
 clock = pygame.time.Clock()
@@ -19,20 +19,20 @@ MAX_ITEM = 7
 def initialise_game():
     screen.fill((88,88,88))
     global player
-    player = Player()
+    player = Player(100, 100)
     global enemies
     enemies = []
     global projectiles
     projectiles = []
     global game_state
-    itemlist = Init_items()
+    game_state = "gameset"
+    # itemlist = Init_items()
     global items
     items = []
     for i in range(randint(MIN_ITEM, MAX_ITEM)):
-        items.append(itemlist.list[randint(0, len(itemlist.list)-1)]())
+        items.append(ITEM_LIST[randint(0, len(ITEM_LIST)-1)]())
     print(items)
     
-    game_state = "gameset"
     for i in range(randint(3,5)):
         enemies.append(Enemy())
     global revive_gauge

@@ -2,13 +2,10 @@ from random import randint
 import pygame
 
 
+
 class Weapon:
     def __init__(self) -> None:
         self.color = (0, 0, 255)
-
-class Init_items:
-    def __init__(self) -> None:
-        self.list = [Remote_controlled_bullet]
 
 class Remote_controlled_bullet:
     def __init__(self, x=None, y=None) -> None:
@@ -25,9 +22,7 @@ class Remote_controlled_bullet:
         self.show(screen)
         if self.is_picked_up(player):
             items.remove(self)
-            print(items)
-        
-        
+
     
     def is_picked_up(self, player):
         if pygame.Rect.colliderect(player.hitbox, self.hitbox):
@@ -38,6 +33,6 @@ class Remote_controlled_bullet:
         screen.blit(self.img, (self.x, self.y))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
-  
-        
+
+ITEM_LIST = [Remote_controlled_bullet]  
         
