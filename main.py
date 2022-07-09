@@ -26,7 +26,6 @@ def initialise_game():
     projectiles = []
     global game_state
     game_state = "gameset"
-    # itemlist = Init_items()
     global items
     items = []
     for i in range(randint(MIN_ITEM, MAX_ITEM)):

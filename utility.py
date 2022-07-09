@@ -5,8 +5,8 @@ import pygame
 
 class State:
     def __init__(self, cooldown=0, duration=1) -> None:
-        self.cooldown = cooldown
-        self.duration = duration
+        self.cooldown = int(cooldown)
+        self.duration = int(duration)
         self.cool_counter = 0
         self.active_counter = 0
     def is_active(self):
@@ -15,7 +15,7 @@ class State:
         return self.cool_counter > 0 
     def update(self):
         if self.cool_counter and self.active_counter:
-            print("Error on Count class")
+            print("Error on State class")
         if self.cool_counter:
             self.cool_counter -= 1
         if self.active_counter>1:
@@ -23,8 +23,9 @@ class State:
         elif self.active_counter == 1:
             self.active_counter -= 1
             self.cool_counter = self.cooldown
+        # print(self.active_counter, self.cool_counter)
     def activate(self):
-        if not self.is_active and not self.is_cooldown:
+        if not self.is_active() and not self.is_cooldown():
             self.active_counter = self.duration
     def reset(self):
         self.cool_counter = 0
