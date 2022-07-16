@@ -21,16 +21,18 @@ PLAYER_DOWN = pygame.image.load("img/player/down.png").convert_alpha()
 PLAYER_RIGHT = pygame.image.load("img/player/right.png").convert_alpha()
 PLAYER_LEFT = pygame.image.load("img/player/left.png").convert_alpha()
 HEALTH_FONT = pygame.font.Font("font/xeros_karma.ttf", 32)
+MASK = pygame.image.load("img/mask.png").convert_alpha()
+
 
 
 class Player:
     def __init__(self, x, y) -> None:
         self.name = "player"
+        self.img = PLAYER_CENTER
         self.hitbox = pygame.Rect(x, y, self.img.get_width(), self.img.get_height())
         self.health = 50
         self.attack_point = 10
         self.speed = 3
-        self.img = PLAYER_CENTER
         self.bulletVelocity = (1, 1)
         self.remoteVelocity = self.bulletVelocity
         self.invincible = State(cooldown=0, duration=SECOND)
@@ -63,26 +65,26 @@ class Player:
         flag = 1
         if keys[pygame.K_s]:
             velocity = (velocity[0], self.speed)
-            self.img = PLAYER_DOWN
+            # self.img = PLAYER_DOWN
             flag = 0
             self.remoteVelocity = velocity
         if keys[pygame.K_w]:
             velocity = (velocity[0], -self.speed)
-            self.img = PLAYER_UP
+            # self.img = PLAYER_UP
             flag = 0
             self.remoteVelocity = velocity
         if keys[pygame.K_d]:
             velocity = (self.speed, velocity[1])
-            self.img = PLAYER_RIGHT
+            # self.img = PLAYER_RIGHT
             flag = 0
             self.remoteVelocity = velocity
         if keys[pygame.K_a]:
             velocity = (-self.speed, velocity[1])
-            self.img = PLAYER_LEFT
+            # self.img = PLAYER_LEFT
             flag = 0
             self.remoteVelocity = velocity
-        if flag:
-            self.img = PLAYER_CENTER
+        # if flag:
+            # self.img = PLAYER_CENTER
         if velocity != (0, 0) and not self.remote_bullet_item:
             self.bulletVelocity = velocity
         pygame.Rect.move_ip(self.hitbox, velocity[0], velocity[1])
@@ -118,6 +120,9 @@ class Player:
     
     def show(self, screen, show_hitbox=True):
         screen.blit(self.img, (self.hitbox.left, self.hitbox.top))
+        if self.invincible.is_active():
+            screen.blit(pygame.transform.scale(MASK, (self.hitbox.width, self.hitbox.height)), 
+                        (self.hitbox.left, self.hitbox.top))
         if show_hitbox:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
         health_txt = HEALTH_FONT.render(str(self.health), True, 'green', None)
@@ -203,6 +208,8 @@ class Bullet:
         self.hitbox.left += self.velocity[0] * self.speed
         self.hitbox.top += self.velocity[1] * self.speed
         self.check_hit(entities)
+
+    
     def is_outbound(self):
         screen_right = SCREEN_WIDTH - self.hitbox.width
         screen_bottom = SCREEN_HEIGHT - self.hitbox.height

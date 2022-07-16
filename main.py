@@ -1,12 +1,18 @@
+from cgi import test
 from random import randint
 from sys import exit
 import pygame
-from Entity import Enemy, Player
+from Entity import SCREEN_HEIGHT, SCREEN_WIDTH, Enemy, Player
 from Item import ITEM_LIST
+from utility import Animation
+
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 768
+FPS = 60
 # initialization
 pygame.init()
 clock = pygame.time.Clock()
-screen = pygame.display.set_mode((1024,768))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 BACKGROUND = pygame.image.load("img/background1.png").convert_alpha()
 GAMEOVER_COVER = pygame.image.load("img/gameover_hollow_cover.png").convert_alpha()
@@ -15,9 +21,10 @@ STD_FONT = pygame.font.Font("font/yayusa3d.ttf", 64)
 pygame.display.set_caption("Da game")
 MIN_ITEM = 1
 MAX_ITEM = 7
+GREY = (88, 88, 88)
 
 def initialise_game():
-    screen.fill((88,88,88))
+    screen.fill(GREY)
     global player
     player = Player(100, 100)
     global enemies
@@ -53,7 +60,6 @@ def update_elements(keys_pressed):
     # items
     for item in items:
         item.update(player, screen, items)
-    
     player.update(keys_pressed, enemies, projectiles)
     if player.is_dead():
         global game_state
@@ -71,6 +77,8 @@ def show_elements(screen):
     # items
     for item in items:
         item.show(screen)
+
+test_gif = Animation("img/player/", "mouth_attack")
 
 initialise_game()
 while True:
@@ -110,10 +118,15 @@ while True:
             revive_gauge -= 20
         elif revive_gauge < 0:
             revive_gauge += 10
-        if revive_gauge < -768:
+        if revive_gauge < -SCREEN_HEIGHT:
             initialise_game()
     else:
         pass
-        
+
+    if keys_pressed[pygame.K_t]:
+        test_gif.play(10)
+    test_gif.update(screen)
+
+
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(FPS)

@@ -1,8 +1,22 @@
+from __future__ import print_function
+from dis import dis
+from importlib.metadata import files
 from math import acos, sqrt
+from operator import index
+import os
+from numpy import disp
 import pygame
+from PIL import Image, GifImagePlugin
+import traceback
 # file containing utility classes
 # does not need to be implemented
-
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 768
+FPS = 60
+# initialization
+pygame.init()
+clock = pygame.time.Clock()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 class State:
     def __init__(self, cooldown=0, duration=1) -> None:
         self.cooldown = int(cooldown)
@@ -111,3 +125,71 @@ class Body:
     def move_to(self, x, y):
         self.update(x, y, self.width, self.height)
 
+
+GIFRAME_FOLDER = "GIFrame/"
+class Animation:
+    def __init__(self, entity_filepath, filename) -> None:
+        self.tape = []
+        
+        GIF_path = entity_filepath + GIFRAME_FOLDER
+        root_dir = os.getcwd()
+        print(f"root_dir: {root_dir}")
+        if filename not in os.listdir(GIF_path):
+            imgpath = f"{entity_filepath}{filename}.gif"
+            print(f"imgpath: {imgpath}")
+            frame_folder = f"{GIF_path}/{filename}/"
+            print(f"frame_folder:  {frame_folder}")
+            os.mkdir(frame_folder)
+            try:
+                with Image.open(imgpath) as im:
+                    os.chdir(os.getcwd() + '/' + frame_folder)
+                    for frame in range(im.n_frames):
+                        im.seek(frame)
+                        im.save(str(frame) + ".png")
+            except:
+                print(traceback.format_exc())
+                exit()
+        tape_path = GIF_path + filename
+        print(f"curPath: {os.getcwd()}")
+        frames = os.listdir(tape_path)
+        self.n_frames = len(frames)
+        for framename in frames:
+            self.tape.append(pygame.image.load(tape_path + "/" + framename).convert_alpha())
+        self.cur_frame = -1
+        self.tick_per_frame = 1
+        self.counter = None
+
+    def play(self, play_time=None):
+        if play_time:
+            display_frame_length = round(play_time * FPS)
+            assert(display_frame_length>=self.n_frames)
+            self.tick_per_frame = round(display_frame_length / self.n_frames)
+        self.cur_frame = 0
+        self.counter = self.tick_per_frame
+
+    def update(self,screen=None, pos=None, x=0, y=0):
+        if self.cur_frame == -1:
+            pass
+        else: #is in mid of display
+            #check counter
+            if self.counter == 0 and self.cur_frame<self.n_frames:
+                self.cur_frame += 1
+                self.counter = self.tick_per_frame
+            elif self.counter > 0:
+                self.counter -= 1
+            else:
+                assert(False)
+            if self.counter == 0 and self.cur_frame>=self.n_frames-1:
+                self.reset()
+            #display
+            if pos:
+                screen.blit(self.tape[self.cur_frame], pos)
+            else:
+                screen.blit(self.tape[self.cur_frame], (x, y))
+            
+
+    def reset(self):
+        self.cur_frame = -1
+        self.counter = None
+        
+                
