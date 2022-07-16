@@ -78,7 +78,7 @@ def show_elements(screen):
     for item in items:
         item.show(screen)
 
-test_gif = Animation("img/player/", "mouth_attack")
+# test_gif = Animation("img/player/", "mouth_attack")
 
 initialise_game()
 while True:
@@ -123,9 +123,9 @@ while True:
     else:
         pass
 
-    if keys_pressed[pygame.K_t]:
-        test_gif.play(10)
-    test_gif.update(screen)
+    # if keys_pressed[pygame.K_t]:
+    #     test_gif.play(10)
+    # test_gif.update(screen)
 
 
     pygame.display.update()

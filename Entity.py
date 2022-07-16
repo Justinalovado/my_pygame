@@ -1,6 +1,6 @@
 from random import randint
 import pygame
-from utility import State
+from utility import Animation, State
 
 pygame.init()
 # ATTACKSTATE NEEDS TO BE ADDED
@@ -37,7 +37,7 @@ class Player:
         self.remoteVelocity = self.bulletVelocity
         self.invincible = State(cooldown=0, duration=SECOND)
         self.reloading = State(cooldown=0, duration=PLAYER_RELOAD_TIME*SECOND)
-
+        self.mouth_attack_animation = Animation("img/player/", "mouth_attack")
         self.remote_bullet_item = False
 
     def update(self, keys, enemies, projectiles):
@@ -47,6 +47,7 @@ class Player:
         self.reloading.update()
         if keys[pygame.K_k]:
             self.attack(projectiles)
+        
         
     def attack(self, projectiles):
         if not self.reloading.is_active() and not self.is_overloaded(projectiles):
@@ -59,6 +60,7 @@ class Player:
                 self.name
             ))
             self.reloading.activate()
+            self.mouth_attack_animation.play(PLAYER_RELOAD_TIME)
                 
     def move(self, keys):
         velocity = (0, 0)
@@ -127,6 +129,7 @@ class Player:
             pygame.draw.rect(screen, "lightgreen", self.hitbox, width=1)
         health_txt = HEALTH_FONT.render(str(self.health), True, 'green', None)
         screen.blit(health_txt, (20, 0))
+        self.mouth_attack_animation.update(screen, pos=self.hitbox.center)
 
     def is_overloaded(self, projectiles):
         if not self.remote_bullet_item:
