@@ -1,6 +1,6 @@
 from random import randint
 import pygame
-from utility import Animation, State
+from utility import Animation, State, Vector
 
 pygame.init()
 # ATTACKSTATE NEEDS TO BE ADDED
@@ -32,13 +32,17 @@ class Player:
         self.hitbox = pygame.Rect(x, y, self.img.get_width(), self.img.get_height())
         self.health = 50
         self.attack_point = 10
-        self.speed = 3
+        
         self.bulletVelocity = (1, 1)
         self.remoteVelocity = self.bulletVelocity
         self.invincible = State(cooldown=0, duration=SECOND)
         self.reloading = State(cooldown=0, duration=PLAYER_RELOAD_TIME*SECOND)
         self.mouth_attack_animation = Animation("img/player/", "mouth_attack")
         self.remote_bullet_item = False
+        self.velocity = Vector((0, 0))
+        self.damping = 0.5
+        self.cap_speed = 3
+        self.acceleration = 1
 
     def update(self, keys, enemies, projectiles):
         self.move(keys)
@@ -63,35 +67,42 @@ class Player:
             self.mouth_attack_animation.play(PLAYER_RELOAD_TIME)
                 
     def move(self, keys):
-        velocity = (0, 0)
+        acceleration = Vector((0, 0))
         flag = 1
         if keys[pygame.K_s]:
-            velocity = (velocity[0], self.speed)
+            # velocity = (velocity[0], self.speed)
+            acceleration.add(y=self.acceleration)
             # self.img = PLAYER_DOWN
             flag = 0
-            self.remoteVelocity = velocity
+            self.remoteVelocity = self.velocity
         if keys[pygame.K_w]:
-            velocity = (velocity[0], -self.speed)
+            # velocity = (velocity[0], -self.speed)
+            acceleration.add(y=-self.acceleration)
             # self.img = PLAYER_UP
             flag = 0
-            self.remoteVelocity = velocity
+            self.remoteVelocity = self.velocity
         if keys[pygame.K_d]:
-            velocity = (self.speed, velocity[1])
+            # velocity = (self.speed, velocity[1])
+            acceleration.add(x=self.acceleration)
             # self.img = PLAYER_RIGHT
             flag = 0
-            self.remoteVelocity = velocity
+            self.remoteVelocity = self.velocity
         if keys[pygame.K_a]:
-            velocity = (-self.speed, velocity[1])
+            # velocity = (-self.speed, velocity[1])
+            acceleration.add(x=-self.acceleration)
             # self.img = PLAYER_LEFT
             flag = 0
-            self.remoteVelocity = velocity
+            self.remoteVelocity = self.velocity
         # if flag:
             # self.img = PLAYER_CENTER
-        if velocity != (0, 0) and not self.remote_bullet_item:
-            self.bulletVelocity = velocity
-        pygame.Rect.move_ip(self.hitbox, velocity[0], velocity[1])
+        if self.velocity != (0, 0) and not self.remote_bullet_item:
+            self.bulletVelocity = self.velocity
+        self.velocity.add(vector=acceleration)
+        self.velocity.damp(self.damping)
+        pygame.Rect.move_ip(self.hitbox, self.velocity.x, self.velocity.y)
+
         if self.is_outbound():
-            pygame.Rect.move_ip(self.hitbox, -velocity[0], -velocity[1])
+            pygame.Rect.move_ip(self.hitbox, -self.velocity.x, -self.velocity.y)
 
     def is_outbound(self):
         screen_right = SCREEN_WIDTH - self.hitbox.width

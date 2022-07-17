@@ -45,7 +45,7 @@ class State:
         self.cool_counter = 0
         self.active_counter = 0
 
-class Point:
+class Vector:
     def __init__(self, tup = None, x=0, y=0) -> None:
         if tup:
             self.x, self.y = tup[0], tup[1]
@@ -61,16 +61,16 @@ class Point:
             self.x, self.y = targetX, targetY
         return self
     # move point by offsets (x_offset, y_offset)
-    def move_by(self, vector = None, x_offset=0, y_offset=0):
+    def add(self, vector = None, x=0, y=0):
         if vector:
             self.x += vector.x
             self.y += vector.y
         else:
-            self.x += x_offset
-            self.y += y_offset
+            self.x += x
+            self.y += y
         return self
     
-    def copy(self): return Point(self.x, self.y)
+    def copy(self): return Vector(self.x, self.y)
 
     # calculate straight to the point, targetX, targetY for alternative input
     # if nothing is inputted, return distance to (0,0)
@@ -95,6 +95,20 @@ class Point:
         return acos(dot(vA, vB)/(mod(vA)*mod(vB)))
     def to_tup(self):
         return (self.x, self.y)
+    def damp(self, damp):
+        if self.x > 0:
+            self.x = self.x - damp if self.x >= damp else 0
+        elif self.x < 0:
+            self.x = self.x + damp if self.x <= damp else 0
+        else:
+            pass
+        if self.y > 0:
+            self.y = self.y - damp if self.y >= damp else 0
+        elif self.y < 0:
+            self.y = self.y + damp if self.y <= damp else 0
+        else:
+            pass
+
 class Body:
     def __init__(self,topLeftX, topLeftY, width, height, img) -> None:
         self.hitbox = pygame.Rect(topLeftX, topLeftY, width=width, height=height)
