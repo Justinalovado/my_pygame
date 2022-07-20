@@ -40,9 +40,11 @@ class Player:
         self.mouth_attack_animation = Animation("img/player/", "mouth_attack")
         self.remote_bullet_item = False
         self.velocity = Vector((0, 0))
-        self.damping = 0.5
+        self.damping = 0.2
         self.cap_speed = 3
         self.acceleration = 1
+        self.max_velocity = 5
+
 
     def update(self, keys, enemies, projectiles):
         self.move(keys)
@@ -59,8 +61,8 @@ class Player:
                 self.hitbox.centerx,
                 self.hitbox.centery,
                 self.attack_point,
-                self.bulletVelocity[0], 
-                self.bulletVelocity[1],
+                self.bulletVelocity.x, 
+                self.bulletVelocity.y,
                 self.name
             ))
             self.reloading.activate()
@@ -97,13 +99,13 @@ class Player:
             # self.img = PLAYER_CENTER
         if self.velocity != (0, 0) and not self.remote_bullet_item:
             self.bulletVelocity = self.velocity
-        self.velocity.add(vector=acceleration)
-        self.velocity.damp(self.damping)
+        self.velocity.add(vector=acceleration, damp=self.damping, cap=self.max_velocity)
+        # self.velocity.damp(self.damping)
         pygame.Rect.move_ip(self.hitbox, self.velocity.x, self.velocity.y)
 
         if self.is_outbound():
             pygame.Rect.move_ip(self.hitbox, -self.velocity.x, -self.velocity.y)
-
+            self.velocity.reset()
     def is_outbound(self):
         screen_right = SCREEN_WIDTH - self.hitbox.width
         screen_bottom = SCREEN_HEIGHT - self.hitbox.height
@@ -219,8 +221,9 @@ class Bullet:
         
 
     def update(self, entities):
-        self.hitbox.left += self.velocity[0] * self.speed
-        self.hitbox.top += self.velocity[1] * self.speed
+
+        self.hitbox.left += self.velocity.x * self.speed
+        self.hitbox.top += self.velocity.y * self.speed
         self.check_hit(entities)
 
     

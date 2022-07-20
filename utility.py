@@ -61,15 +61,30 @@ class Vector:
             self.x, self.y = targetX, targetY
         return self
     # move point by offsets (x_offset, y_offset)
-    def add(self, vector = None, x=0, y=0):
+    def add(self, vector = None, x=0, y=0,  damp=None, cap=None):
         if vector:
             self.x += vector.x
             self.y += vector.y
         else:
             self.x += x
             self.y += y
+        
+        if damp:
+            self.damp(damp)
+        if cap:
+            self.cap(cap)
         return self
     
+    def cap(self, cap):
+        if self.x > cap:
+            self.x = cap
+        elif self.x < -cap:
+            self.x = -cap
+        if self.y > cap:
+            self.y = cap
+        elif self.y < -cap:
+            self.y = -cap
+
     def copy(self): return Vector(self.x, self.y)
 
     # calculate straight to the point, targetX, targetY for alternative input
@@ -108,6 +123,12 @@ class Vector:
             self.y = self.y + damp if self.y <= damp else 0
         else:
             pass
+    def reset(self):
+        self.x = 0
+        self.y = 0
+    def set_val(self, x, y):
+        self.x = x
+        self.y = y
 
 class Body:
     def __init__(self,topLeftX, topLeftY, width, height, img) -> None:
@@ -116,23 +137,23 @@ class Body:
         self.img = img
     # return point 
     def topLeft(self):
-        return Point(self.hitbox.topleft)
+        return Vector(self.hitbox.topleft)
     def top(self):
-        return Point(self.hitbox.midtop)
+        return Vector(self.hitbox.midtop)
     def topRight(self):
-        return Point(self.hitbox.topright)
+        return Vector(self.hitbox.topright)
     def Left(self):
-        return Point(self.hitbox.midleft)
+        return Vector(self.hitbox.midleft)
     def center(self):
-        return Point(self.hitbox.center)
+        return Vector(self.hitbox.center)
     def Right(self):
-        return Point(self.hitbox.midright)
+        return Vector(self.hitbox.midright)
     def bottomLeft(self):
-        return Point(self.hitbox.bottomleft)
+        return Vector(self.hitbox.bottomleft)
     def bottom(self):
-        return Point(self.hitbox.midbottom)
+        return Vector(self.hitbox.midbottom)
     def bottomRight(self):
-        return Point(self.hitbox.bottomright)
+        return Vector(self.hitbox.bottomright)
 
     def move_by(self, x, y):
         self.hitbox.move_ip(x, y)
